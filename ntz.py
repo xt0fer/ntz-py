@@ -44,12 +44,19 @@ from sys import argv
 class Ntz:
   def __init__(self):
     self.fn = 'db.json'
+    self.swb = {
+          '-l': self.do_list,
+          '-r': self.do_store,
+          '-c': self.do_store,
+          '-f': self.do_erase,
+          '-e': self.do_replace,
+      }
 
   def opendb(self):
       try:
         with open(self.fn) as file:
           content = file.read()
-          print("before db", content)
+          #print("before db", content)
           data = json.loads(content)
           if data == None:
             data = {}
@@ -62,7 +69,7 @@ class Ntz:
   def save(self, db):
       with open(self.fn, 'w') as file:
           documents = json.dumps(db)
-          print("documents", documents)
+          #print("documents", documents)
           file.write(documents)
           file.close()
 
@@ -70,7 +77,7 @@ class Ntz:
       # print("debug:", argv)
       # "ntz"
       if len(argv) == 1:
-          return '-l', 'ToDo', '0', ''
+          return '-l', 'all', '0', ''
       # ntz -r "note"
       if len(argv) == 3:
           return argv[1], "ToDo", '0', argv[2]
@@ -84,14 +91,7 @@ class Ntz:
 
 
   def perform_cmd(self, db, cmd, cat, n, note):
-      swb = {
-          '-l': self.do_list,
-          '-r': self.do_store,
-          '-c': self.do_store,
-          '-f': self.do_erase,
-          '-e': self.do_replace,
-      }
-      do_work = swb.get(cmd)
+      do_work = self.swb.get(cmd)
 
       if do_work is None:
           return -1, "invalid command"
@@ -104,7 +104,7 @@ class Ntz:
       if cat != 'all':
           self.print_cat(db, cat)
       else:
-          cats = db.get(cat)
+          cats = db.keys() # get(cat)
           if cats != None:
               for cat in cats:
                   self.print_cat(db, cat)
@@ -122,12 +122,12 @@ class Ntz:
               i = i + 1
 
   def do_store(self, db, cat, n, note):
-      print('store:', cat, n, note)
+      #print('store:', cat, n, note)
       # ntz -c Shopping "while out, get eggs"
       if db.get(cat) is None:
           db[cat] = []
       db[cat].append(note)
-      print('db', db)
+      #print('db', db)
       return 0, ''
 
   def do_erase(self, db, cat, n, note):
